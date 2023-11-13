@@ -16,7 +16,9 @@ def home(request):
 
     topics = Topic.objects.all()
 
-    context = {'rooms': rooms, 'topics': topics}
+    room_cnt = rooms.count()
+
+    context = {'rooms': rooms, 'topics': topics, 'room_cnt': room_cnt}
     return render(request, 'base/home.html', context)
 
 
