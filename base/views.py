@@ -40,10 +40,11 @@ def logoutUser(request):
     logout(request)
     return redirect('home')
 
+
 def registerPage(request):
     form = UserCreationForm
 
-    if request.method =='POST':
+    if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -57,6 +58,7 @@ def registerPage(request):
 
     context = {'form': form}
     return render(request, 'base/login_register.html', context)
+
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') is not None else ''
@@ -91,6 +93,16 @@ def room(request, pk):
 
     context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
+
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+
+    context = {'user': user, 'rooms': rooms, 'room_messages': room_messages, 'topics': topics}
+    return render(request, 'base/profile.html', context)
 
 
 @login_required(login_url='/login')
@@ -136,6 +148,7 @@ def deleteRoom(request, pk):
     context = {'obj': room}
     return render(request, 'base/delete.html', context)
 
+
 @login_required(login_url='/login')
 def deleteMessage(request, pk):
     message = Message.objects.get(id=pk)
@@ -148,4 +161,3 @@ def deleteMessage(request, pk):
         return redirect('home')
     context = {'obj': message}
     return render(request, 'base/delete.html', context)
-
