@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+
+# Python
+.env/
+.venv/
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm
+.idea/
+
+# Local PostgreSQL data
+data/
