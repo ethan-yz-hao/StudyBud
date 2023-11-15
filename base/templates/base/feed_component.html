@@ -1,3 +1,4 @@
+{% load filters %}
 {% for room in rooms %}
     <div class="roomListRoom">
         <div class="roomListRoom__header">
@@ -34,7 +35,7 @@
                 </svg>
                 {{ room.participants.all.count }} Joined
             </a>
-            <p class="roomListRoom__topic">{{ room.topic.name }}</p>
+            <p class="roomListRoom__topic">{{ room.topic.name|urldecode }}</p>
         </div>
     </div>
 {% endfor %}

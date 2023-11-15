@@ -1,5 +1,5 @@
 {% extends 'main.html' %}
-
+{% load filters %}
 {% block content %}
     <main class="create-room layout">
         <div class="container">
@@ -29,11 +29,11 @@
 
                         <div class="form__group">
                             <label for="room_topic">Room Topic</label>
-                            <input required type="text" value="{{ room.topic.name }}" name="topic" list="topic-list">
+                            <input required type="text" value="{{ room.topic.name|urldecode }}" name="topic" list="topic-list">
                             <datalist id="topic-list">
                                 <select id="room_topic"></select>
                                 {% for topic in topics %}
-                                    <option value="{{ topic.name }}">{{ topic.name }}</option>
+                                    <option value="{{ topic.name|urldecode }}">{{ topic.name|urldecode}}</option>
                                 {% endfor %}
                             </datalist>
                         </div>

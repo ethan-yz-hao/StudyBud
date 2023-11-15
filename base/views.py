@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Room, Topic, Message, User
 from .forms import RoomForm, UserUpdateForm, MyUserCreationForm
-
+import urllib.parse
 
 # Create your views here.
 def loginPage(request):
@@ -60,6 +60,7 @@ def registerPage(request):
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') is not None else ''
+    q = urllib.parse.quote(q)
     rooms = Room.objects.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
@@ -81,6 +82,10 @@ def room(request, pk):
     participants = room.participants.all()
 
     if request.method == "POST":
+
+        if not request.user.is_authenticated:
+            return redirect('/login')
+
         message = Message.objects.create(
             user=request.user,
             room=room,
@@ -108,7 +113,7 @@ def createRoom(request):
     form = RoomForm()
     topics = Topic.objects.all()
     if request.method == "POST":
-        topic_name = request.POST.get('topic')
+        topic_name = urllib.parse.quote(request.POST.get('topic'))
         topic, created = Topic.objects.get_or_create(name=topic_name)
         Room.objects.create(
             host=request.user,
@@ -131,12 +136,18 @@ def updateRoom(request, pk):
         return HttpResponse('You are not allowed here')
 
     if request.method == "POST":
-        topic_name = request.POST.get('topic')
+        original_topic = room.topic
+
+        topic_name = urllib.parse.quote(request.POST.get('topic'))
         topic, created = Topic.objects.get_or_create(name=topic_name)
         room.name = request.POST.get('name')
         room.topic = topic
         room.description = request.POST.get('description')
         room.save()
+
+        if original_topic.room_set.count() == 0:
+            original_topic.delete()
+
         return redirect('home')
 
     context = {'form': form, 'room': room, 'topics': topics}
@@ -151,7 +162,12 @@ def deleteRoom(request, pk):
         return HttpResponse('You are not allowed here')
 
     if request.method == 'POST':
+        topic = room.topic
         room.delete()
+
+        if topic.room_set.count() == 0:
+            topic.delete()
+
         return redirect('home')
     context = {'obj': room}
     return render(request, 'base/delete.html', context)
