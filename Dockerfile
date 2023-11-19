@@ -7,7 +7,7 @@ COPY . /app
 
 WORKDIR /app
 
-EXPOSE 8000
+EXPOSE 9000
 
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
