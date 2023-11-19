@@ -20,7 +20,11 @@ RUN python -m venv /py && \
     mkdir -p /app/assets/static /app/assets/media && \
     chown -R app:app /app/assets/static /app/assets/media && \
     chmod -R 755 /app/assets/static /app/assets/media && \
-    chmod -R +x /app/scripts
+    chmod -R +x /app/scripts && \
+    mkdir -p /var/log &&\
+    chown -R app:app /var/log && \
+    chmod -R 755 /var/log
+
 
 ENV PATH="/app/scripts:/py/bin:$PATH"
 
