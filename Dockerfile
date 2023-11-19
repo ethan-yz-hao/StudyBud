@@ -19,7 +19,7 @@ RUN python -m venv /py && \
     adduser --disabled-password --no-create-home app && \
     mkdir -p /app/assets/static /app/assets/media && \
     chown -R app:app /app/assets/static /app/assets/media && \
-    chmod -R 755 /app/assets/static /app/assets/media \
+    chmod -R 755 /app/assets/static /app/assets/media && \
     chmod -R +x /app/scripts
 
 ENV PATH="/app/scripts:/py/bin:$PATH"
