@@ -183,6 +183,6 @@ CSRF_TRUSTED_ORIGINS = []
 CSRF_TRUSTED_ORIGINS.extend(
     filter(
         None,
-        os.environ.get('ALLOWED_HOSTS', '').split(',')
+        os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
     )
 )
