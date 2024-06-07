@@ -30,7 +30,7 @@ Deployed at EC2: [StudyBud](http://studybud.ethanhao.org/)
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/studybud.git
+    git clone https://github.com/ethan-yz-hao/StudyBud.git
     cd studybud
     ```
 
