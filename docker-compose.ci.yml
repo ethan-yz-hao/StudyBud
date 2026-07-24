@@ -20,7 +20,12 @@ services:
     depends_on:
       - db
     networks:
-      - network-1
+      network-1:
+        # Distinct alias: the shared `edge` network already has an `app` alias
+        # (issue-tracker's service is also named `app`), and the proxy is on both
+        # networks, so a bare `app` upstream would resolve to the wrong container.
+        aliases:
+          - studybud-app
 
   db:
     image: postgres:13-alpine
@@ -39,6 +44,8 @@ services:
     restart: always
     depends_on:
       - app
+    environment:
+      - APP_HOST=studybud-app
     expose:
       - "8000"
     volumes:
