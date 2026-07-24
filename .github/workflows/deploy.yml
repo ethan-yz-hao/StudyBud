@@ -1,0 +1,65 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push images
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          docker build -t "$REGISTRY/studybud-app:${{ github.sha }}" -t "$REGISTRY/studybud-app:latest" .
+          docker build -t "$REGISTRY/studybud-proxy:${{ github.sha }}" -t "$REGISTRY/studybud-proxy:latest" ./proxy
+          docker push "$REGISTRY/studybud-app:${{ github.sha }}"
+          docker push "$REGISTRY/studybud-app:latest"
+          docker push "$REGISTRY/studybud-proxy:${{ github.sha }}"
+          docker push "$REGISTRY/studybud-proxy:latest"
+
+      - name: Trigger deploy on the apps box (SSM)
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "${{ vars.APPS_INSTANCE_ID }}" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy studybud ${{ github.sha }}" \
+            --parameters commands='cd /data/compose/StudyBud && git pull --ff-only origin main && bash deploy.sh' \
+            --query Command.CommandId --output text)
+          echo "SSM command: $CMD_ID"
+          for i in $(seq 1 60); do
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" \
+              --instance-id "${{ vars.APPS_INSTANCE_ID }}" --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Success) echo "deploy succeeded"; break ;;
+              Failed|Cancelled|TimedOut) echo "deploy $STATUS"; \
+                aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "${{ vars.APPS_INSTANCE_ID }}" \
+                  --query StandardErrorContent --output text; exit 1 ;;
+              *) sleep 10 ;;
+            esac
+          done
+          aws ssm get-command-invocation --command-id "$CMD_ID" \
+            --instance-id "${{ vars.APPS_INSTANCE_ID }}" --query StandardOutputContent --output text
