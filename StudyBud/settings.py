@@ -186,3 +186,13 @@ CSRF_TRUSTED_ORIGINS.extend(
         os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
     )
 )
+
+# TLS is terminated upstream (Cloudflare) and the request reaches this app over
+# plain HTTP inside the Docker network. Trust the proxy's X-Forwarded-Proto so
+# request.is_secure() is correct; otherwise CSRF rejects https:// origins and
+# any redirect Django builds downgrades to http://.
+#
+# Safe only because nginx sets this header explicitly (see proxy/default.conf.tpl)
+# and nothing else can reach the app container.
+if os.environ.get('USE_X_FORWARDED_PROTO', '0') == '1':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
