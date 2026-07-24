@@ -41,8 +41,11 @@ services:
       - app
     ports:
       - 80:8000
+      - 443:8443
     volumes:
       - assets-data:/vol/assets
+      # Cloudflare Origin CA cert; absent in local/dev, where nginx serves HTTP only.
+      - ${TLS_CERT_DIR:-./proxy/certs}:/etc/nginx/certs:ro
     networks:
       - network-1
 
