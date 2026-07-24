@@ -5,7 +5,7 @@
 StudyBud is a collaborative platform for students to create and participate in chat rooms about various programming topics. 
 The application features Django for backend operations, PostgreSQL for database management, Docker Compose for containerization, Nginx for serving static files, AWS EC2 for hosting, and Cloudflare for DNS management. 
 
-Deployed at EC2: [StudyBud](http://studybud.ethanhao.org/)
+Deployed at EC2: [StudyBud](https://studybud.ethanhao.org/)
 
 ## Features
 - **User Registration and Authentication**: Allows users to sign up and log in to access login-protected features.
